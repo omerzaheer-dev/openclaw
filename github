@@ -1,0 +1,10 @@
+gh auth login
+
+notepad C:\Users\umerz\.openclaw\openclaw.json
+
+openclaw gateway run
+openclaw dashboard
+
+
+
+openclaw gateway --port 18789
