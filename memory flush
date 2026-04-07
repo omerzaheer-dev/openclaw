@@ -1,0 +1,5 @@
+Enable memory flush before compaction and session memory
+search in my OpenClaw config. Set compaction.memoryFlush.enabled
+to true and set memorySearch.experimental.sessionMemory to true
+with sources including both memory and sessions.
+Apply the config changes.
