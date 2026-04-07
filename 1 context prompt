@@ -1,0 +1,55 @@
+OpenClaw has a habit of breaking when you ask it to make config changes to openclaw.json. It hallucinates field names, over-configures, and introduces syntax errors. The fix? Don’t ask it to figure it out. Paste the directions as a prompt.
+
+// Paste this as your prompt — don’t ask OpenClaw to “figure it out”
+Step 1: Define the agent in agents.list[] — minimal config only
+Add only the required id field. Don’t pile on optional overrides yet.
+{
+  "agents": {
+    "list": [{ "id": "researcher" }]
+  }
+}
+Step 2: Let agents.defaults handle the baseline
+The defaults object applies to all agents. Only add per-agent overrides when actually needed.
+Step 3: Whitelist subagent spawning with allowAgents
+{
+  "id": "orchestrator",
+  "subagents": {
+    "allowAgents": ["researcher", "coder"]
+  }
+}
+Use ["*"] to allow any agent, or list specific IDs.
+Step 4: Set cheaper model for subagents
+{
+  "id": "researcher",
+  "subagents": {
+    "model": "anthropic/claude-sonnet-4"
+  }
+}
+Resolution order: explicit spawn param → per-agent config → target agent’s default.
+Step 5: Cap concurrency to prevent runaway spawning
+{
+  "agents": {
+    "defaults": {
+      "maxConcurrent": 4,
+      "subagents": { "maxConcurrent": 8 }
+    }
+  }
+}
+Step 6: Scope tool access
+{
+  "tools": {
+    "subagents": {
+      "tools": {
+        "allow": ["read", "exec", "process",
+                   "write", "edit", "apply_patch"]
+      }
+    }
+  }
+}
+Deny always wins over allow. Custom deny entries stack with defaults.
+Common Failure Traps:
+Legacy agent.* (singular) keys — run openclaw doctor to auto-migrate
+Old env vars (CLAWDBOT_TOKEN, MOLTBOT_API_KEY) — replace with OPENCLAW_TOKEN
+Subagents only get AGENTS.md + TOOLS.md — not your main agent’s personality files
+Auth profiles are merged as fallback — fully isolated auth per subagent is not supported yet
+Validation Workflow: Add config → openclaw doctor → /subagents to inspect → test locally before
